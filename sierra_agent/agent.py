@@ -144,8 +144,8 @@ class SierraAgent:
         except Exception as exc:
             if AuthenticationError is not None and isinstance(exc, AuthenticationError):
                 raise RuntimeError(
-                    "OpenAI rejected the API key. Export your real API key instead of the "
-                    "placeholder value, then restart the chat."
+                    "OpenAI rejected the API key. Check that your local `.env` contains a valid "
+                    "OPENAI_API_KEY and that your shell is not overriding it with an old value."
                 ) from exc
             if OpenAIError is not None and isinstance(exc, OpenAIError):
                 raise RuntimeError(f"OpenAI API request failed: {exc}") from exc

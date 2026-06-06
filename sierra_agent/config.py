@@ -3,6 +3,11 @@ from pathlib import Path
 
 
 ROOT_DIR = Path(__file__).resolve().parents[1]
+PLACEHOLDER_API_KEYS = {
+    "your-api-key",
+    "your-api-key-here",
+    "sk-your-api-key-here",
+}
 
 
 def load_env_file(path: Path = ROOT_DIR / ".env") -> None:
@@ -18,5 +23,7 @@ def load_env_file(path: Path = ROOT_DIR / ".env") -> None:
         key = key.strip()
         value = value.strip().strip('"').strip("'")
 
-        if key and key not in os.environ:
+        current_value = os.environ.get(key, "").strip().strip('"').strip("'")
+
+        if key and (key not in os.environ or current_value in PLACEHOLDER_API_KEYS):
             os.environ[key] = value
