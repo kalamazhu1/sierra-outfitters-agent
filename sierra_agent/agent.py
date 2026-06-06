@@ -3,9 +3,11 @@ import os
 from typing import Any, Callable, Dict, List
 
 try:
-    from openai import OpenAI
+    from openai import AuthenticationError, OpenAI, OpenAIError
 except ImportError:  # pragma: no cover - exercised manually before dependencies are installed
+    AuthenticationError = None
     OpenAI = None
+    OpenAIError = None
 
 from sierra_agent.tools import (
     lookup_order,
@@ -111,7 +113,7 @@ class SierraAgent:
 
     def respond(self, user_input: str) -> str:
         self.history.append({"role": "user", "content": user_input})
-        response = self._create_response(self.history)
+        response = self._safe_create_response(self.history)
 
         while self._has_function_call(response):
             self.history.extend(response.output)
@@ -125,11 +127,24 @@ class SierraAgent:
                             "output": json.dumps(tool_output),
                         }
                     )
-            response = self._create_response(self.history)
+            response = self._safe_create_response(self.history)
 
         final_text = response.output_text.strip()
         self.history.extend(response.output)
         return final_text
+
+    def _safe_create_response(self, input_items: List[Dict[str, Any]]) -> Any:
+        try:
+            return self._create_response(input_items)
+        except Exception as exc:
+            if AuthenticationError is not None and isinstance(exc, AuthenticationError):
+                raise RuntimeError(
+                    "OpenAI rejected the API key. Export your real API key instead of the "
+                    "placeholder value, then restart the chat."
+                ) from exc
+            if OpenAIError is not None and isinstance(exc, OpenAIError):
+                raise RuntimeError(f"OpenAI API request failed: {exc}") from exc
+            raise
 
     def _create_response(self, input_items: List[Dict[str, Any]]) -> Any:
         return self.client.responses.create(
