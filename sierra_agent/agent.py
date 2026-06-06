@@ -9,6 +9,7 @@ except ImportError:  # pragma: no cover - exercised manually before dependencies
     OpenAI = None
     OpenAIError = None
 
+from sierra_agent.config import load_env_file
 from sierra_agent.tools import (
     lookup_order,
     request_early_risers_promotion,
@@ -96,11 +97,15 @@ TOOLS = [
 
 class SierraAgent:
     def __init__(self, model: str = "gpt-4o-mini") -> None:
+        load_env_file()
+
         if OpenAI is None:
             raise RuntimeError("the OpenAI SDK is not installed. Run `pip install -r requirements.txt`.")
 
         if not os.getenv("OPENAI_API_KEY"):
-            raise RuntimeError("OPENAI_API_KEY is not set. Export it before starting the chat.")
+            raise RuntimeError(
+                "OPENAI_API_KEY is not set. Add it to a local `.env` file or export it before starting the chat."
+            )
 
         self.client = OpenAI()
         self.model = model

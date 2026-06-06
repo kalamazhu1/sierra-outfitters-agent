@@ -8,10 +8,16 @@ A terminal-based customer support agent for Sierra Outfitters. It uses OpenAI's 
 python3 -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
-export OPENAI_API_KEY="your-api-key"
+cp .env.example .env
 ```
 
-The assignment-provided key supports `gpt-4o` and `gpt-4o-mini`. This project defaults to `gpt-4o-mini`.
+Then edit `.env` and replace the placeholder with your API key:
+
+```bash
+OPENAI_API_KEY=sk-your-api-key-here
+```
+
+The assignment-provided key supports `gpt-4o` and `gpt-4o-mini`. This project defaults to `gpt-4o-mini`. The `.env` file is ignored by git so the key is not committed.
 
 ## Run
 
@@ -52,7 +58,7 @@ The tests cover deterministic local behavior: order lookup, tracking links, miss
 ## Design Notes
 
 - The agent uses OpenAI for conversation and tool selection, but all business facts come from local JSON files in `data/`.
-- The code does not hardcode API keys. It reads `OPENAI_API_KEY` from the environment.
+- The code does not hardcode API keys. It reads `OPENAI_API_KEY` from `.env` or the environment.
 - Product recommendation responses are grounded in the catalog search tool.
 - Orders can reference SKUs that are not in the product catalog. Those SKUs are returned as unavailable details instead of causing failures.
 - Promo code uniqueness is maintained in memory for the running session.
