@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Sierra Outfitters Agent</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+  </head>
+  <body>
+    <main class="app-shell">
+      <section class="chat-panel" aria-label="Sierra Outfitters chat">
+        <header class="chat-header">
+          <div>
+            <p class="eyebrow">Sierra Outfitters</p>
+            <h1>Trail Support Agent</h1>
+          </div>
+          <button class="icon-button" id="resetButton" type="button" title="Reset chat" aria-label="Reset chat">
+            ↻
+          </button>
+        </header>
+
+        <div class="messages" id="messages" aria-live="polite">
+          <article class="message bot">
+            <div class="avatar" aria-hidden="true">SO</div>
+            <div class="bubble">
+              Hi, I’m your Sierra Outfitters support guide. I can help with orders, tracking, product recommendations, and the Early Risers Promotion.
+            </div>
+          </article>
+        </div>
+
+        <div class="suggestions" aria-label="Demo prompts">
+          <button type="button" data-prompt="Where is my order?">Order status</button>
+          <button type="button" data-prompt="Can you recommend gear for winter snow?">Winter gear</button>
+          <button type="button" data-prompt="Can I get the Early Risers Promotion?">Promotion</button>
+        </div>
+
+        <form class="composer" id="chatForm">
+          <label class="sr-only" for="messageInput">Message</label>
+          <textarea id="messageInput" rows="1" placeholder="Ask about orders, gear, or promos..." autocomplete="off"></textarea>
+          <button class="send-button" type="submit" aria-label="Send message">➜</button>
+        </form>
+      </section>
+    </main>
+
+    <script src="{{ url_for('static', filename='app.js') }}"></script>
+  </body>
+</html>

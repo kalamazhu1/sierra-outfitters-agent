@@ -21,11 +21,21 @@ The assignment-provided key supports `gpt-4o` and `gpt-4o-mini`. This project de
 
 ## Run
 
+Terminal chat:
+
 ```bash
 python main.py
 ```
 
-Type `exit` or `quit` to end the chat.
+Web chat UI:
+
+```bash
+python web_app.py
+```
+
+Then open `http://127.0.0.1:5001`.
+
+In the terminal chat, type `exit` or `quit` to end the chat.
 
 ## Demo Prompts
 
