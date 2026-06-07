@@ -9,6 +9,34 @@ from sierra_agent.data import load_orders, load_products
 PACIFIC_TIME = ZoneInfo("America/Los_Angeles")
 USPS_TRACKING_URL = "https://tools.usps.com/go/TrackConfirmAction?tLabels={tracking_number}"
 _GENERATED_CODES = set()
+STOP_WORDS = {
+    "a",
+    "am",
+    "an",
+    "and",
+    "are",
+    "can",
+    "do",
+    "for",
+    "give",
+    "going",
+    "have",
+    "i",
+    "is",
+    "me",
+    "need",
+    "of",
+    "on",
+    "or",
+    "recommend",
+    "should",
+    "something",
+    "the",
+    "to",
+    "what",
+    "with",
+    "you",
+}
 
 
 def lookup_order(email: str, order_number: str) -> Dict[str, Any]:
@@ -52,7 +80,7 @@ def lookup_order(email: str, order_number: str) -> Dict[str, Any]:
 
 def search_product_catalog(query: str, max_results: int = 3) -> Dict[str, Any]:
     max_results = max(1, min(int(max_results), 5))
-    query_terms = _tokenize(query)
+    query_terms = [token for token in _tokenize(query) if token not in STOP_WORDS]
 
     scored_products = []
     for product in load_products():
@@ -144,17 +172,26 @@ def _tokenize(text: str) -> List[str]:
 
 
 def _score_product(query_terms: List[str], searchable_text: str, tags: List[str]) -> int:
-    normalized_text = searchable_text.lower()
-    normalized_tags = {tag.lower() for tag in tags}
+    searchable_terms = {_stem_token(token) for token in _tokenize(searchable_text)}
+    tag_terms = {_stem_token(token) for tag in tags for token in _tokenize(tag)}
     score = 0
 
     for term in query_terms:
-        if term in normalized_text:
+        normalized_term = _stem_token(term)
+        if normalized_term in searchable_terms:
             score += 1
-        if any(term in tag for tag in normalized_tags):
+        if normalized_term in tag_terms:
             score += 2
 
     return score
+
+
+def _stem_token(token: str) -> str:
+    if len(token) > 4 and token.endswith("ing"):
+        return token[:-3]
+    if len(token) > 3 and token.endswith("s"):
+        return token[:-1]
+    return token
 
 
 def _generate_unique_code() -> str:
