@@ -113,7 +113,10 @@ async function sendMessage(message) {
     const data = await response.json();
 
     pending.remove();
-    appendMessage("bot", data.ok ? data.reply : `I hit a snag on the trail: ${data.error}`);
+    const botMessage = appendMessage("bot", data.ok ? data.reply : `I hit a snag on the trail: ${data.error}`);
+    if (data.ok && data.artifacts?.products?.length) {
+      appendProductCards(botMessage, data.artifacts.products);
+    }
   } catch (error) {
     pending.remove();
     appendMessage("bot", "I hit a snag on the trail: the local chat server did not respond.");
@@ -121,6 +124,40 @@ async function sendMessage(message) {
     setSending(false);
     input.focus();
   }
+}
+
+function appendProductCards(messageElement, products) {
+  const cards = document.createElement("div");
+  cards.className = "product-cards";
+
+  products.forEach((product) => {
+    const card = document.createElement("section");
+    card.className = "product-card";
+
+    const title = document.createElement("h2");
+    title.textContent = product.product_name;
+
+    const meta = document.createElement("p");
+    meta.className = "product-meta";
+    meta.textContent = `${product.sku} · ${product.inventory} in stock`;
+
+    const description = document.createElement("p");
+    description.className = "product-description";
+    description.textContent = product.description;
+
+    const tags = document.createElement("div");
+    tags.className = "product-tags";
+    product.tags.slice(0, 4).forEach((tag) => {
+      const chip = document.createElement("span");
+      chip.textContent = tag;
+      tags.append(chip);
+    });
+
+    card.append(title, meta, description, tags);
+    cards.append(card);
+  });
+
+  messageElement.querySelector(".bubble").append(cards);
 }
 
 form.addEventListener("submit", (event) => {

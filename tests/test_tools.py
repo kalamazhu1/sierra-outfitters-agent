@@ -16,6 +16,7 @@ def test_lookup_order_succeeds_with_valid_email_and_order_number():
 
     assert result["ok"] is True
     assert result["status"] == "delivered"
+    assert result["status_guidance"]["headline"] == "Delivered to basecamp"
     assert result["tracking_number"] == "TRK123456789"
     assert result["tracking_url"].endswith("TRK123456789")
 
@@ -65,6 +66,7 @@ def test_error_status_order_does_not_create_tracking_link():
 
     assert result["ok"] is True
     assert result["status"] == "error"
+    assert result["status_guidance"]["headline"] == "Needs a trail check"
     assert result["tracking_number"] is None
     assert result["tracking_url"] is None
 

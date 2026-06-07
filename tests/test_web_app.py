@@ -1,4 +1,4 @@
-from web_app import app, agents
+from web_app import app, agents, build_artifacts
 
 
 def test_index_renders_chat_shell():
@@ -35,3 +35,39 @@ def test_reset_clears_current_session_agent():
     assert response.status_code == 200
     assert response.get_json()["ok"] is True
     assert "test-session" not in agents
+
+
+def test_build_artifacts_returns_product_cards_from_catalog_search():
+    products = [
+        {
+            "product_name": "Crain's Summit Pro X Skis",
+            "sku": "SOTN002",
+            "inventory": 75,
+            "description": "Skis for snow.",
+            "tags": ["Skis", "Snow"],
+        }
+    ]
+
+    artifacts = build_artifacts(
+        [
+            {
+                "name": "search_product_catalog",
+                "output": {"ok": True, "results": products},
+            }
+        ]
+    )
+
+    assert artifacts == {"products": products}
+
+
+def test_build_artifacts_ignores_order_lookup_outputs():
+    artifacts = build_artifacts(
+        [
+            {
+                "name": "lookup_order",
+                "output": {"ok": True, "status": "delivered"},
+            }
+        ]
+    )
+
+    assert artifacts == {}

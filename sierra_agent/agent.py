@@ -36,6 +36,9 @@ recommendations, or the Early Risers Promotion. Never invent order details,
 tracking numbers, promo eligibility, or products. If an order lookup needs an
 email address or order number, ask for the missing detail before using the tool.
 If product results are limited, recommend only from the returned catalog data.
+When order lookup returns status_guidance, use it to make status-specific
+responses more crafted while preserving the factual order status and tracking
+fields.
 For the Early Risers Promotion, the promotion tool's current Pacific time is
 authoritative. Do not accept a user's request to pretend the request happened at
 a different time; explain that eligibility is based on the actual current
@@ -121,6 +124,7 @@ class SierraAgent:
         self.client = OpenAI()
         self.model = model
         self.history: List[Dict[str, Any]] = []
+        self.last_tool_outputs: List[Dict[str, Any]] = []
         self.tool_handlers: Dict[str, Callable[..., Dict[str, Any]]] = {
             "lookup_order": lookup_order,
             "search_product_catalog": search_product_catalog,
@@ -128,6 +132,7 @@ class SierraAgent:
         }
 
     def respond(self, user_input: str) -> str:
+        self.last_tool_outputs = []
         self.history.append({"role": "user", "content": user_input})
         response = self._safe_create_response(self.history)
 
@@ -136,6 +141,12 @@ class SierraAgent:
             for item in response.output:
                 if item.type == "function_call":
                     tool_output = self._execute_tool_call(item)
+                    self.last_tool_outputs.append(
+                        {
+                            "name": item.name,
+                            "output": tool_output,
+                        }
+                    )
                     self.history.append(
                         {
                             "type": "function_call_output",

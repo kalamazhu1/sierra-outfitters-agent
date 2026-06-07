@@ -33,7 +33,13 @@ def chat():
             agents[session_id] = agent
 
         reply = agent.respond(message)
-        return jsonify({"ok": True, "reply": reply})
+        return jsonify(
+            {
+                "ok": True,
+                "reply": reply,
+                "artifacts": build_artifacts(agent.last_tool_outputs),
+            }
+        )
     except RuntimeError as exc:
         return jsonify({"ok": False, "error": str(exc)}), 500
 
@@ -44,6 +50,21 @@ def reset():
     if session_id:
         agents.pop(session_id, None)
     return jsonify({"ok": True})
+
+
+def build_artifacts(tool_outputs):
+    artifacts = {}
+
+    for tool_call in tool_outputs:
+        if tool_call["name"] != "search_product_catalog":
+            continue
+
+        output = tool_call["output"]
+        results = output.get("results") or []
+        if results:
+            artifacts["products"] = results
+
+    return artifacts
 
 
 if __name__ == "__main__":

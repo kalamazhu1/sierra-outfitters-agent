@@ -37,6 +37,28 @@ STOP_WORDS = {
     "with",
     "you",
 }
+ORDER_STATUS_GUIDANCE = {
+    "delivered": {
+        "headline": "Delivered to basecamp",
+        "tone": "Celebrate that the customer's gear has arrived.",
+        "next_step": "Invite them to reach out if anything in the package needs attention.",
+    },
+    "in-transit": {
+        "headline": "Still on the trail",
+        "tone": "Reassure the customer that the order is moving.",
+        "next_step": "Share the USPS link so they can follow the package.",
+    },
+    "fulfilled": {
+        "headline": "Packed for the next leg",
+        "tone": "Explain that the order is prepared, but tracking is not available yet.",
+        "next_step": "Avoid inventing a tracking link and suggest checking back soon.",
+    },
+    "error": {
+        "headline": "Needs a trail check",
+        "tone": "Acknowledge that the order hit rough terrain.",
+        "next_step": "Explain that tracking is unavailable and a support teammate may need to help.",
+    },
+}
 
 
 def lookup_order(email: str, order_number: str) -> Dict[str, Any]:
@@ -62,6 +84,14 @@ def lookup_order(email: str, order_number: str) -> Dict[str, Any]:
                 "email": order["Email"],
                 "order_number": order["OrderNumber"],
                 "status": order["Status"],
+                "status_guidance": ORDER_STATUS_GUIDANCE.get(
+                    order["Status"],
+                    {
+                        "headline": "Order status found",
+                        "tone": "Explain the status clearly.",
+                        "next_step": "Offer to help with another Sierra Outfitters question.",
+                    },
+                ),
                 "products_ordered": products,
                 "tracking_number": tracking_number,
                 "tracking_url": tracking_url,
