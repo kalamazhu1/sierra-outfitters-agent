@@ -3,7 +3,7 @@ from datetime import datetime
 from typing import Any, Dict, List, Optional
 from zoneinfo import ZoneInfo
 
-from sierra_agent.data import load_orders, load_products
+from sierra_agent.data import load_orders, load_products, load_products_by_sku
 
 
 PACIFIC_TIME = ZoneInfo("America/Los_Angeles")
@@ -65,7 +65,7 @@ def lookup_order(email: str, order_number: str) -> Dict[str, Any]:
     normalized_email = email.strip().lower()
     normalized_order_number = _normalize_order_number(order_number)
 
-    product_by_sku = {product["SKU"]: product for product in load_products()}
+    product_by_sku = load_products_by_sku()
     for order in load_orders():
         if (
             order["Email"].strip().lower() == normalized_email
