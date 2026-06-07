@@ -1,4 +1,4 @@
-from web_app import app, agents, build_artifacts
+from web_app import app, agents, build_artifacts, build_display_reply
 
 
 def test_index_renders_chat_shell():
@@ -71,3 +71,24 @@ def test_build_artifacts_ignores_order_lookup_outputs():
     )
 
     assert artifacts == {}
+
+
+def test_build_display_reply_collapses_recommendation_text_when_cards_exist():
+    artifacts = {
+        "products": [
+            {
+                "product_name": "Crain's Summit Pro X Skis",
+                "sku": "SOTN002",
+            }
+        ]
+    }
+
+    reply = build_display_reply("Long product description from the model.", artifacts)
+
+    assert reply == "Here are the best trail-ready matches I found:"
+
+
+def test_build_display_reply_keeps_non_product_responses():
+    reply = "Your order is still on the trail."
+
+    assert build_display_reply(reply, {}) == reply

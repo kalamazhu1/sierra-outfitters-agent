@@ -33,11 +33,12 @@ def chat():
             agents[session_id] = agent
 
         reply = agent.respond(message)
+        artifacts = build_artifacts(agent.last_tool_outputs)
         return jsonify(
             {
                 "ok": True,
-                "reply": reply,
-                "artifacts": build_artifacts(agent.last_tool_outputs),
+                "reply": build_display_reply(reply, artifacts),
+                "artifacts": artifacts,
             }
         )
     except RuntimeError as exc:
@@ -65,6 +66,13 @@ def build_artifacts(tool_outputs):
             artifacts["products"] = results
 
     return artifacts
+
+
+def build_display_reply(reply, artifacts):
+    if artifacts.get("products"):
+        return "Here are the best trail-ready matches I found:"
+
+    return reply
 
 
 if __name__ == "__main__":
