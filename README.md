@@ -80,3 +80,41 @@ The tests cover deterministic local behavior: order lookup, tracking links, miss
 - Product recommendation responses are grounded in the catalog search tool.
 - Orders can reference SKUs that are not in the product catalog. Those SKUs are returned as unavailable details instead of causing failures.
 - Promo code uniqueness is maintained in memory for the running session.
+
+## Agent
+Flow:
+User asks something
+        ↓
+LLM reads prompt + conversation + tool schemas
+        ↓
+LLM decides:
+  - answer directly, OR
+  - ask for missing info, OR
+  - call a tool
+        ↓
+If tool call, API returns structured function_call item
+
+## Tools
+Order Lookup:
+
+Normalize inputs (email, order #)
+build product lookup: sku to product
+loop through orders
+build response and return structured data
+
+at scale we'd move the orders into a db so we wouldn't need to loop through orders
+
+Product Recommendations:
+
+Tool tokenizes inputs
+Tool searches the catalog
+Sorts and returns results
+
+at scale build an inverted index. 
+also vector index for fuzzy matching
+
+Promos:
+Tool checks time and sees if it's within 8am - 10am
+generates a random code and stores it in a set to guarantee uniqueness
+
+At scale store in a db to guarantee uniqueness. Can also validate things like one use per user or expired promos etc.
