@@ -4,6 +4,14 @@ A terminal-based customer support agent for Sierra Outfitters. It uses OpenAI's 
 
 ## Setup
 
+Fast path:
+
+```bash
+make install
+```
+
+Manual setup:
+
 ```bash
 python3 -m venv .venv
 source .venv/bin/activate
@@ -24,13 +32,13 @@ The assignment-provided key supports `gpt-4o` and `gpt-4o-mini`. This project de
 Terminal chat:
 
 ```bash
-python main.py
+make chat
 ```
 
 Web chat UI:
 
 ```bash
-python web_app.py
+make web
 ```
 
 Then open `http://127.0.0.1:5001`.
@@ -60,7 +68,7 @@ What happened to order #W004 for bob.brown@example.com?
 ## Tests
 
 ```bash
-pytest
+make test
 ```
 
 The tests cover deterministic local behavior: order lookup, tracking links, missing catalog SKUs, catalog search, and promotion eligibility.
