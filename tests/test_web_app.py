@@ -3,6 +3,7 @@ from web_app import (
     agents,
     build_artifacts,
     build_display_reply,
+    build_product_artifacts,
     ensure_product_artifacts,
     is_product_recommendation_message,
 )
@@ -27,6 +28,18 @@ def test_chat_rejects_empty_message():
 
     assert response.status_code == 400
     assert response.get_json()["error"] == "Please enter a message."
+
+
+def test_chat_returns_cards_directly_for_product_recommendations():
+    app.config.update(TESTING=True)
+    client = app.test_client()
+
+    response = client.post("/api/chat", json={"message": "recommend me something lightweight"})
+    payload = response.get_json()
+
+    assert response.status_code == 200
+    assert payload["reply"] == "Here are the best trail-ready matches I found:"
+    assert payload["artifacts"]["products"][0]["sku"] == "SOSB006"
 
 
 def test_reset_clears_current_session_agent():
@@ -122,3 +135,9 @@ def test_ensure_product_artifacts_preserves_existing_products():
     existing = {"products": [{"sku": "SOTN002"}]}
 
     assert ensure_product_artifacts("Can you recommend winter gear?", existing) == existing
+
+
+def test_build_product_artifacts_returns_catalog_results():
+    artifacts = build_product_artifacts("recommend me something lightweight")
+
+    assert artifacts["products"][0]["sku"] == "SOSB006"

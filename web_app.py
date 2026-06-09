@@ -51,6 +51,16 @@ def chat():
     if not message:
         return jsonify({"ok": False, "error": "Please enter a message."}), 400
 
+    if is_product_recommendation_message(message):
+        artifacts = build_product_artifacts(message)
+        return jsonify(
+            {
+                "ok": True,
+                "reply": build_display_reply("", artifacts),
+                "artifacts": artifacts,
+            }
+        )
+
     session_id = session.setdefault("session_id", str(uuid.uuid4()))
 
     try:
@@ -100,11 +110,16 @@ def ensure_product_artifacts(message, artifacts):
     if artifacts.get("products") or not is_product_recommendation_message(message):
         return artifacts
 
-    results = search_product_catalog(message).get("results") or []
-    if results:
-        return {**artifacts, "products": results}
+    product_artifacts = build_product_artifacts(message)
+    if product_artifacts.get("products"):
+        return {**artifacts, **product_artifacts}
 
     return artifacts
+
+
+def build_product_artifacts(message):
+    results = search_product_catalog(message).get("results") or []
+    return {"products": results} if results else {}
 
 
 def is_product_recommendation_message(message):
