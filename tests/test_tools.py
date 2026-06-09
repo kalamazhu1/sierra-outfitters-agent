@@ -2,9 +2,12 @@ from datetime import datetime
 from zoneinfo import ZoneInfo
 
 from sierra_agent.tools import (
+    TAG_MATCH_WEIGHT,
+    TEXT_MATCH_WEIGHT,
     lookup_order,
     request_early_risers_promotion,
     search_product_catalog,
+    _score_product,
 )
 
 
@@ -117,6 +120,18 @@ def test_catalog_search_returns_empty_results_for_no_match():
     assert result["ok"] is True
     assert result["results"] == []
     assert result["message"] == "No matching in-stock products found."
+
+
+def test_catalog_scoring_weights_tag_matches_independently_from_text_matches():
+    score = _score_product(["winter"], "winter jacket description", ["Winter"])
+
+    assert score == TEXT_MATCH_WEIGHT + TAG_MATCH_WEIGHT
+
+
+def test_catalog_scoring_allows_tag_only_matches():
+    score = _score_product(["winter"], "jacket description", ["Winter"])
+
+    assert score == TAG_MATCH_WEIGHT
 
 
 def test_promo_code_is_generated_during_valid_window():

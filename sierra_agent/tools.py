@@ -9,6 +9,8 @@ from sierra_agent.data import load_orders, load_products, load_products_by_sku
 PACIFIC_TIME = ZoneInfo("America/Los_Angeles")
 USPS_TRACKING_URL = "https://tools.usps.com/go/TrackConfirmAction?tLabels={tracking_number}"
 _GENERATED_CODES = set()
+TEXT_MATCH_WEIGHT = 1
+TAG_MATCH_WEIGHT = 3
 STOP_WORDS = {
     "a",
     "am",
@@ -122,7 +124,6 @@ def search_product_catalog(query: str, max_results: int = 3) -> Dict[str, Any]:
                 product["ProductName"],
                 product["SKU"],
                 product["Description"],
-                " ".join(product["Tags"]),
             ]
         )
         score = _score_product(query_terms, searchable_text, product["Tags"])
@@ -209,9 +210,9 @@ def _score_product(query_terms: List[str], searchable_text: str, tags: List[str]
     for term in query_terms:
         normalized_term = _stem_token(term)
         if normalized_term in searchable_terms:
-            score += 1
+            score += TEXT_MATCH_WEIGHT
         if normalized_term in tag_terms:
-            score += 2
+            score += TAG_MATCH_WEIGHT
 
     return score
 
