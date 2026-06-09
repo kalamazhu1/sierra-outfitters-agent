@@ -4,11 +4,38 @@ import uuid
 from flask import Flask, jsonify, render_template, request, session
 
 from sierra_agent.agent import SierraAgent
+from sierra_agent.tools import search_product_catalog
 
 
 app = Flask(__name__)
 app.secret_key = os.getenv("SIERRA_UI_SECRET_KEY", "sierra-outfitters-local-dev")
 agents = {}
+PRODUCT_RECOMMENDATION_TERMS = {
+    "backpack",
+    "buy",
+    "carry",
+    "catalog",
+    "drink",
+    "food",
+    "gear",
+    "hiking",
+    "lightweight",
+    "product",
+    "recommend",
+    "recommendation",
+    "skis",
+    "snow",
+    "something",
+    "winter",
+}
+NON_PRODUCT_TERMS = {
+    "discount",
+    "early risers",
+    "order",
+    "promo",
+    "promotion",
+    "tracking",
+}
 
 
 @app.get("/")
@@ -34,6 +61,7 @@ def chat():
 
         reply = agent.respond(message)
         artifacts = build_artifacts(agent.last_tool_outputs)
+        artifacts = ensure_product_artifacts(message, artifacts)
         return jsonify(
             {
                 "ok": True,
@@ -66,6 +94,26 @@ def build_artifacts(tool_outputs):
             artifacts["products"] = results
 
     return artifacts
+
+
+def ensure_product_artifacts(message, artifacts):
+    if artifacts.get("products") or not is_product_recommendation_message(message):
+        return artifacts
+
+    results = search_product_catalog(message).get("results") or []
+    if results:
+        return {**artifacts, "products": results}
+
+    return artifacts
+
+
+def is_product_recommendation_message(message):
+    normalized = message.lower()
+
+    if any(term in normalized for term in NON_PRODUCT_TERMS):
+        return False
+
+    return any(term in normalized for term in PRODUCT_RECOMMENDATION_TERMS)
 
 
 def build_display_reply(reply, artifacts):

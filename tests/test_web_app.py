@@ -1,4 +1,11 @@
-from web_app import app, agents, build_artifacts, build_display_reply
+from web_app import (
+    app,
+    agents,
+    build_artifacts,
+    build_display_reply,
+    ensure_product_artifacts,
+    is_product_recommendation_message,
+)
 
 
 def test_index_renders_chat_shell():
@@ -92,3 +99,26 @@ def test_build_display_reply_keeps_non_product_responses():
     reply = "Your order is still on the trail."
 
     assert build_display_reply(reply, {}) == reply
+
+
+def test_recommendation_detection_matches_follow_up_product_requests():
+    assert is_product_recommendation_message("how about something lightweight") is True
+    assert is_product_recommendation_message("Can you recommend winter gear?") is True
+
+
+def test_recommendation_detection_ignores_order_and_promo_requests():
+    assert is_product_recommendation_message("where is my order?") is False
+    assert is_product_recommendation_message("can I get the early risers promotion?") is False
+
+
+def test_ensure_product_artifacts_falls_back_to_catalog_search():
+    artifacts = ensure_product_artifacts("how about something lightweight", {})
+
+    assert artifacts["products"]
+    assert artifacts["products"][0]["sku"] == "SOSB006"
+
+
+def test_ensure_product_artifacts_preserves_existing_products():
+    existing = {"products": [{"sku": "SOTN002"}]}
+
+    assert ensure_product_artifacts("Can you recommend winter gear?", existing) == existing
